@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import requests
+import zipfile
 from typing import Dict
 
 # ------------------------------------------
@@ -36,18 +37,26 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ------------------------------------------
+## ------------------------------------------
 # Data Loading (Optimized)
 # ------------------------------------------
 @st.cache_data(show_spinner="Optimizing dataset...")
 def load_and_clean_data():
-    # Pandas is smart enough to open zip files automatically!
-    df = pd.read_csv('DataCoSupplyChainDataset.zip', encoding='latin1')
+    # Robust ZIP extraction logic
+    try:
+        with zipfile.ZipFile('DataCoSupplyChainDataset.zip', 'r') as z:
+            # Find the actual CSV file inside the zip, ignoring hidden Mac folders
+            csv_filename = [name for name in z.namelist() if name.endswith('.csv')][0]
+            with z.open(csv_filename) as f:
+                df = pd.read_csv(f, encoding='latin1')
+    except Exception as e:
+        st.error(f"Error loading dataset: {e}")
+        return pd.DataFrame()
+
     df.columns = [col.strip().lower().replace(' ', '_').replace('(', '').replace(')', '') for col in df.columns]
     
     # Drop heavy unused columns
     cols_to_drop = ['product_description', 'customer_password', 'customer_email', 'product_image', 'customer_fname', 'customer_lname', 'customer_street', 'customer_zipcode', 'order_zipcode']
-    df = df.drop(columns=[col for col in cols_to_drop if col in df.columns])
     
     # Downcast categorical data to save memory
     for col in ['market', 'order_region', 'shipping_mode', 'category_name', 'delivery_status', 'order_status']:
