@@ -41,7 +41,8 @@ st.markdown("""
 # ------------------------------------------
 @st.cache_data(show_spinner="Optimizing dataset...")
 def load_and_clean_data():
-    df = pd.read_csv('DataCoSupplyChainDataset.csv', encoding='latin1')
+    # Pandas is smart enough to open zip files automatically!
+    df = pd.read_csv('DataCoSupplyChainDataset.zip', encoding='latin1')
     df.columns = [col.strip().lower().replace(' ', '_').replace('(', '').replace(')', '') for col in df.columns]
     
     # Drop heavy unused columns
