@@ -87,6 +87,8 @@ def load_and_clean_data():
     
     return df
 
+df = load_and_clean_data()
+
 # ------------------------------------------
 # Business Logic Classes
 # ------------------------------------------
