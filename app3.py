@@ -37,30 +37,45 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-## ------------------------------------------
-# Data Loading (Optimized)
 # ------------------------------------------
-@st.cache_data(show_spinner="Optimizing dataset...")
+# Data Loading (Optimized & Cloud-Safe)
+# ------------------------------------------
+@st.cache_data(show_spinner="Extracting and Optimizing dataset...")
 def load_and_clean_data():
-    # Robust ZIP extraction logic
+    import zipfile
+    import os
+    
     try:
+        # Open the zip file
         with zipfile.ZipFile('DataCoSupplyChainDataset.zip', 'r') as z:
-            # Find the actual CSV file inside the zip, ignoring hidden Mac folders
-            csv_filename = [name for name in z.namelist() if name.endswith('.csv')][0]
-            with z.open(csv_filename) as f:
-                df = pd.read_csv(f, encoding='latin1')
+            # Find the actual CSV, strictly ignoring Mac's hidden "ghost" files
+            valid_csvs = [
+                name for name in z.namelist() 
+                if name.endswith('.csv') and '__MACOSX' not in name and not name.split('/')[-1].startswith('._')
+            ]
+            target_csv = valid_csvs[0]
+            
+            # Extract it to the Streamlit Cloud server safely
+            z.extract(target_csv)
+            
+        # Read the physically extracted file (bypasses all pandas file-handling errors)
+        df = pd.read_csv(target_csv, encoding='latin1')
+        
     except Exception as e:
-        st.error(f"Error loading dataset: {e}")
+        st.error(f"Error reading file: {e}")
         return pd.DataFrame()
 
+    # Clean column names
     df.columns = [col.strip().lower().replace(' ', '_').replace('(', '').replace(')', '') for col in df.columns]
     
     # Drop heavy unused columns
     cols_to_drop = ['product_description', 'customer_password', 'customer_email', 'product_image', 'customer_fname', 'customer_lname', 'customer_street', 'customer_zipcode', 'order_zipcode']
+    df = df.drop(columns=[col for col in cols_to_drop if col in df.columns])
     
     # Downcast categorical data to save memory
     for col in ['market', 'order_region', 'shipping_mode', 'category_name', 'delivery_status', 'order_status']:
-        if col in df.columns: df[col] = df[col].astype('category')
+        if col in df.columns: 
+            df[col] = df[col].astype('category')
             
     df['order_date_dateorders'] = pd.to_datetime(df['order_date_dateorders'])
     df['year_month'] = df['order_date_dateorders'].dt.to_period('M').astype(str)
@@ -69,9 +84,8 @@ def load_and_clean_data():
     df['shipping_delay'] = df['days_for_shipping_real'] - df['days_for_shipment_scheduled']
     df['is_fraud'] = (df['order_status'] == 'SUSPECTED_FRAUD').astype(int)
     df['is_canceled'] = (df['order_status'] == 'CANCELED').astype(int)
+    
     return df
-
-df = load_and_clean_data()
 
 # ------------------------------------------
 # Business Logic Classes
