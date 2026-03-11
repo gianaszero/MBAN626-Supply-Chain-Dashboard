@@ -19,7 +19,7 @@ Object-Oriented Python architecture.
 
 2. FILES INCLUDED IN THIS SUBMISSION
 -----------------------------------------------------------------------------
-- app.py                        : The main Streamlit web application script.
+- app3.py                        : The main Streamlit web application script.
 - Dashboard_Notebook.ipynb      : The Jupyter Notebook containing the initial 
                                   data exploration, cleaning steps, and scratchpad.
 - DataCoSupplyChainDataset.csv  : The raw dataset (Sourced from Kaggle).
@@ -46,7 +46,7 @@ Step 2: Open your Terminal (Mac/Linux) or Command Prompt / Anaconda Prompt (Wind
 Step 3: Navigate to the extracted folder using the 'cd' command. 
         Example: cd Desktop/MBAN626_Project
 Step 4: Execute the following command to launch the app:
-        streamlit run app.py
+        streamlit run app3.py
 Step 5: The dashboard will automatically open in your default web browser 
         at http://localhost:8501.
 
