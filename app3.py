@@ -172,6 +172,22 @@ def load_and_clean_data():
     df['shipping_delay'] = df['days_for_shipping_real'] - df['days_for_shipment_scheduled']
     df['is_fraud'] = (df['order_status'] == 'SUSPECTED_FRAUD').astype(int)
     df['is_canceled'] = (df['order_status'] == 'CANCELED').astype(int)
+
+    df['shipping_delay'] = df['days_for_shipping_real'] - df['days_for_shipment_scheduled']
+    df['is_fraud'] = (df['order_status'] == 'SUSPECTED_FRAUD').astype(int)
+    df['is_canceled'] = (df['order_status'] == 'CANCELED').astype(int)
+    
+    # ADD THESE LINES HERE:
+    # Pre-calculate predictive risk score so the UI doesn't have to do it on every click
+    max_delay = df['shipping_delay'].max()
+    min_delay = df['shipping_delay'].min()
+    if max_delay - min_delay != 0:
+        scaled_delay = (df['shipping_delay'] - min_delay) / (max_delay - min_delay)
+    else:
+        scaled_delay = 0
+        
+    df['risk_score'] = (scaled_delay * 0.7) + (df['late_delivery_risk'] * 0.3)
+
     return df
 
 df = load_and_clean_data()
@@ -240,10 +256,12 @@ if selected_market != "All Markets": df = df[df['market'] == selected_market]
 currency_options = ['USD', 'EUR', 'GBP', 'JPY']
 selected_currency = st.sidebar.selectbox("Select Currency", currency_options)
 
+@st.cache_data(ttl=3600)
 def get_rate(curr):
     if curr == 'USD': return 1.0
     try: return requests.get(f"https://api.frankfurter.app/latest?from=USD&to={curr}", timeout=2).json()['rates'][curr]
     except: return 1.0
+
 rate = get_rate(selected_currency)
 
 # Chart layout config to remove visual clutter and match CSS
