@@ -148,9 +148,14 @@ def load_and_clean_data():
             
         # Read the physically extracted file (bypasses all pandas file-handling errors)
         df = pd.read_csv(target_csv, encoding='latin1')
-        
+
     except Exception as e:
         st.error(f"Error reading file: {e}")
+
+    # Clean the column names (THIS IS THE MISSING LINE!)
+    df.columns = [col.strip().lower().replace(' ', '_').replace('(', '').replace(')', '') for col in df.columns]
+
+    # Drop heavy unused columns
 
     # Drop heavy unused columns
     cols_to_drop = ['product_description', 'customer_password', 'customer_email', 'product_image', 'customer_fname', 'customer_lname', 'customer_street', 'customer_zipcode', 'order_zipcode']
