@@ -13,6 +13,9 @@ st.set_page_config(page_title="DataCo Supply Chain", page_icon="📦", layout="w
 # ------------------------------------------
 # UI ENHANCEMENTS: GLASSMORPHISM CSS
 # ------------------------------------------
+# ------------------------------------------
+# UI ENHANCEMENTS: GLASSMORPHISM CSS
+# ------------------------------------------
 st.markdown("""
 <style>
     /* Import modern font */
@@ -55,6 +58,11 @@ st.markdown("""
         -webkit-backdrop-filter: blur(20px) !important;
         border-right: 1px solid rgba(255, 255, 255, 0.5) !important;
     }
+    
+    /* Force inner sidebar container to be transparent */
+    [data-testid="stSidebar"] > div:first-child {
+        background: transparent !important;
+    }
 
     /* 3. Style Metric Containers (Glass Cards) */
     div[data-testid="metric-container"] {
@@ -86,6 +94,8 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.7) !important;
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07) !important;
         padding: 1.5rem 1.5rem 0.5rem 1.5rem !important;
+    } /* <--- THIS WAS THE MISSING BRACKET! */
+
     /* 5. Custom Sidebar Navigation Buttons (Anchors) */
     .nav-glass-btn {
         display: block;
